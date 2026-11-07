@@ -6,7 +6,7 @@ Display the next motorsport sessions with countdowns, race-weekend schedules and
 
 ![Lightsouts integration icon](https://raw.githubusercontent.com/mm98/ha-lightsouts-motorsport-calendar/main/custom_components/lightsouts/brand/icon.png)
 
-*Icon from the source integration. Screenshots of HA Lightsouts Card will be added separately.*
+*Icon provided by the Lightsouts source integration.*
 
 ## Features
 
@@ -29,9 +29,9 @@ Install [Lightsouts Motorsport Calendar](https://github.com/mm98/ha-lightsouts-m
 
 Install **HA Lightsouts Card** from Home Assistant Marketplace as an **Instrumentpanel / Dashboard** repository.
 
-Marketplace normally registers the JavaScript module automatically. If adding the card fails, check **Settings → Dashboards → Resources** for the installed resource before manually adding another one.
+Marketplace normally registers the JavaScript module automatically. If the card is not available after installation, reload Home Assistant in your browser and check **Settings → Dashboards → Resources**.
 
-After installation, add a **Custom: Motorsport Card** using the visual editor, or use YAML as shown below.
+After installation, add **Lightsouts Motorsport Card** using the visual editor, or configure `custom:motorsport-card` in YAML.
 
 ### Series Card
 
@@ -62,7 +62,7 @@ language: auto
 
 Set `overview_layout: list` for the vertical layout. The default calendar setting, `auto`, detects a unique Lightsouts calendar even if its entity ID is customized.
 
-Additional examples are available in the [examples folder](examples/).
+Ready-to-use examples: [Series Card](examples/f1.yaml) and [Motorsport Overview](examples/overview.yaml).
 
 ## Per-series dashboard shortcuts
 
@@ -87,13 +87,13 @@ Replace the example paths with your own dashboard URLs. A normal tap expands the
 
 Supported options are `auto`, `en`, `es` and `sv`. Set `language: auto` to use Home Assistant's configured language. Unsupported locales fall back to English.
 
-The translation catalogs are available in [translations/](translations/) so contributors can propose additional languages. Translation data is bundled into `dist/motorsport-card.js` for installation.
+The translation catalogs are available in [translations/](translations/). Translations are included in the installed JavaScript bundle, so separate language files are not required at runtime.
 
 Series, event and circuit names are taken from Lightsouts; common session labels and card controls are translated.
 
 ## Notes
 
-Completed sessions appear only when they remain available in the Lightsouts calendar. Weather, live timing, race results and standings are not provided by this card.
+Completed sessions appear only when they remain available in the Lightsouts calendar. The countdown and in-progress indicators are schedule-based; the card does not provide verified live timing, weather, race results or standings.
 
 ## Credits
 

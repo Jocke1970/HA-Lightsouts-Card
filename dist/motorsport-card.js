@@ -159,13 +159,13 @@ hasSeriesHold(series){
  const actions=this._config.hold_actions||{};
  const key=Object.keys(actions).find(name=>name.toLowerCase()===String(series).toLowerCase());
  const action=key?actions[key]:null;
- return !!action&&action.action!=='none';
+ return !!action&&(action.action==='more-info'||(action.action==='navigate'&&typeof action.navigation_path==='string'&&action.navigation_path.startsWith('/')));
 }
 onHoldForSeries(series){
  const actions=this._config.hold_actions||{};
  const key=Object.keys(actions).find(name=>name.toLowerCase()===String(series).toLowerCase());
  const action=key?actions[key]:null;
- if(action&&action.action!=='none')this.performHoldAction(action);
+ if(this.hasSeriesHold(series))this.performHoldAction(action);
 }
 performHoldAction(a){
  if(a?.action==='navigate'&&typeof a.navigation_path==='string'&&a.navigation_path.startsWith('/')){
@@ -212,7 +212,7 @@ class MotorsportCardEditor extends HTMLElement{
     <label>${esc(tr(lang,'days_ahead'))}<input type="number" min="1" max="365" data-key="days_ahead" value="${Number(this._config.days_ahead)||120}"></label>
     <label>${esc(tr(lang,'refresh'))}<input type="number" min="5" max="1440" data-key="refresh_minutes" value="${Number(this._config.refresh_minutes)||30}"></label>
     <label class="check"><input type="checkbox" data-key="compact" ${this._config.compact?'checked':''}> ${esc(tr(lang,'compact'))}</label>
-    <label>${esc(tr(lang,'hold_action'))}<select data-key="hold_action"><option value="none">${esc(tr(lang,'hold_none'))}</option><option value="navigate" ${this._config.hold_action?.action==='navigate'?'selected':''}>${esc(tr(lang,'hold_navigate'))}</option><option value="more-info" ${this._config.hold_action?.action==='more-info'?'selected':''}>${esc(tr(lang,'hold_more'))}</option></select></label>
+    <label data-series-only ${this._config.view==='overview'?'hidden':''}>${esc(tr(lang,'hold_action'))}<select data-key="hold_action"><option value="none">${esc(tr(lang,'hold_none'))}</option><option value="navigate" ${this._config.hold_action?.action==='navigate'?'selected':''}>${esc(tr(lang,'hold_navigate'))}</option><option value="more-info" ${this._config.hold_action?.action==='more-info'?'selected':''}>${esc(tr(lang,'hold_more'))}</option></select></label>
     <fieldset class="shortcut-fields" data-overview-only ${this._config.view==='overview'?'':'hidden'}><legend>${esc(tr(lang,'series_shortcuts'))}</legend>
       <label>${esc(tr(lang,'shortcut_series'))}<select data-key="shortcut_series">${Object.keys(COLORS).map(name=>`<option value="${esc(name)}" ${name===this._selectedShortcutSeries?'selected':''}>${esc(name)}</option>`).join('')}</select></label>
       <label>${esc(tr(lang,'shortcut_action'))}<select data-key="shortcut_action">
@@ -222,7 +222,7 @@ class MotorsportCardEditor extends HTMLElement{
       </select></label>
       <label>${esc(tr(lang,'shortcut_path'))}<input data-key="shortcut_path" placeholder="/lovelace/f1-sensor" value="${esc(this._config.hold_actions?.[this._selectedShortcutSeries]?.navigation_path||'')}"></label>
       <small>${esc(tr(lang,'shortcut_help'))}</small>
-      </fieldset><label>${esc(tr(lang,'navigation_path'))}<input data-key="navigation_path" placeholder="/lovelace/f1-sensor" value="${esc(this._config.hold_action?.navigation_path||'')}"><small>${esc(tr(lang,'navigation_help'))}</small></label>
+      </fieldset><label data-series-only ${this._config.view==='overview'?'hidden':''}>${esc(tr(lang,'navigation_path'))}<input data-key="navigation_path" placeholder="/lovelace/f1-sensor" value="${esc(this._config.hold_action?.navigation_path||'')}"><small>${esc(tr(lang,'navigation_help'))}</small></label>
     </div>`;
     for(const el of this.shadowRoot.querySelectorAll('[data-key]'))el.addEventListener('change',()=>{
       const key=el.dataset.key,config={...this._config};
@@ -252,7 +252,10 @@ class MotorsportCardEditor extends HTMLElement{
       else config[key]=el.value;
       this._config=config;
       if(key==='language')this.render();
-      if(key==='view')this.shadowRoot.querySelectorAll('[data-overview-only]').forEach(label=>{label.hidden=config.view!=='overview'});
+      if(key==='view'){
+        this.shadowRoot.querySelectorAll('[data-overview-only]').forEach(field=>{field.hidden=config.view!=='overview'});
+        this.shadowRoot.querySelectorAll('[data-series-only]').forEach(field=>{field.hidden=config.view==='overview'});
+      }
       this.dispatchEvent(new CustomEvent('config-changed',{detail:{config},bubbles:true,composed:true}));
     });
   }

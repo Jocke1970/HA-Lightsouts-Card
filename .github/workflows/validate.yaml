@@ -1,0 +1,29 @@
+name: Validate Motorsport Card
+on:
+  push:
+    branches: [dev, beta, main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  javascript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: node --check dist/motorsport-card.js
+      - name: Run card unit tests
+        run: node --test tests/card.test.cjs
+
+  marketplace:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: hacs/action@main
+        with:
+          category: plugin

@@ -74,3 +74,27 @@ test('overview supports click-to-expand the selected event schedule',()=>{
  assert.match(source,/item\.series===e\.series&&item\.event===e\.event/);
  assert.match(source,/aria-expanded/);
 });
+
+test('language defaults to Home Assistant locale and supports regional variants',()=>{
+ assert.equal(vm.runInContext("resolveLanguage('auto',{locale:{language:'sv-SE'}})",sandbox),'sv');
+ assert.equal(vm.runInContext("resolveLanguage('auto',{locale:{language:'es-ES'}})",sandbox),'es');
+ assert.equal(vm.runInContext("resolveLanguage('auto',{locale:{language:'en-US'}})",sandbox),'en');
+ assert.equal(vm.runInContext("resolveLanguage('auto',{locale:{language:'fr-FR'}})",sandbox),'en');
+ assert.equal(vm.runInContext("resolveLanguage('sv',{locale:{language:'en'}})",sandbox),'sv');
+});
+test('all three languages have consistent keys',()=>{
+ const all=vm.runInContext('LANGUAGE_CATALOG',sandbox);
+ const keys=Object.keys(all.en).sort().join('|');
+ for(const lang of ['sv','es'])assert.equal(Object.keys(all[lang]).sort().join('|'),keys);
+});
+test('session labels are translated without modifying original event fields',()=>{
+ assert.equal(vm.runInContext("localizedSession('Warm Up','sv')",sandbox),'Uppvärmning');
+ assert.equal(vm.runInContext("localizedSession('Qualifying 2','es')",sandbox),'Clasificación 2');
+ assert.equal(vm.runInContext("localizedSession('Free Practice 1','en')",sandbox),'Free Practice 1');
+ assert.equal(vm.runInContext("localizedSession('Unknown Session','es')",sandbox),'Unknown Session');
+});
+test('language selector exists in Lovelace visual editor',()=>{
+ assert.match(source,/data-key="language"/);
+ assert.match(source,/language_auto/);
+ assert.match(source,/if\(key==='language'\)this\.render\(\)/);
+});

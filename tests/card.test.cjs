@@ -43,3 +43,26 @@ test('overview and series card expose layout options',()=>{
  assert.match(sourceText,/overview_layout/);
  assert.match(sourceText,/data-count/);
 });
+
+test('auto-detects renamed Lightsouts entity instead of assuming calendar.lightsouts',()=>{
+ const hass={states:{'calendar.externa_sensorer_lightsouts':{state:'on'},'calendar.personal':{state:'off'}}};
+ const result=vm.runInContext('resolveCalendarEntity('+JSON.stringify(hass)+',"auto")',sandbox);
+ assert.equal(result,'calendar.externa_sensorer_lightsouts');
+});
+test('legacy default resolves unique renamed calendar',()=>{
+ const hass={states:{'calendar.externa_sensorer_lightsouts':{state:'on'}}};
+ const result=vm.runInContext('resolveCalendarEntity('+JSON.stringify(hass)+',"calendar.lightsouts")',sandbox);
+ assert.equal(result,'calendar.externa_sensorer_lightsouts');
+});
+test('explicit missing calendar returns a useful error',()=>{
+ const hass={states:{'calendar.externa_sensorer_lightsouts':{state:'on'}}};
+ assert.throws(()=>vm.runInContext('resolveCalendarEntity('+JSON.stringify(hass)+',"calendar.unknown")',sandbox),/Kalenderentiteten/);
+});
+test('multiple matching calendars require explicit selection',()=>{
+ const hass={states:{'calendar.lightsouts_a':{},'calendar.lightsouts_b':{}}};
+ assert.throws(()=>vm.runInContext('resolveCalendarEntity('+JSON.stringify(hass)+',"auto")',sandbox),/Flera Lightsouts/);
+});
+test('grid CSS uses host as responsive container',()=>{
+ assert.match(source,/:host\\{[^}]*container-type:inline-size/);
+ assert.match(source,/@container \\(max-width:600px\\)/);
+});

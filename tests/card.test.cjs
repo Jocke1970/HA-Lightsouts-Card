@@ -122,7 +122,7 @@ test('overview-only options are hidden for series cards',()=>{
  assert.match(source,/data-overview-only/);
  assert.match(source,/this\._config\.view==='overview'\?'':'hidden'/);
  assert.ok(source.includes('label[hidden],fieldset[hidden]{display:none}'));
- assert.match(source,/label\.hidden=config\.view!=='overview'/);
+ assert.ok(source.includes("field.hidden=config.view!=='overview'"));
 });
 
 test('overview expands full Series Card and keeps weekend schedule independent',()=>{

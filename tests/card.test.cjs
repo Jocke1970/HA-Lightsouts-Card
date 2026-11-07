@@ -66,3 +66,11 @@ test('grid CSS uses host as responsive container',()=>{
  assert.ok(source.includes(':host{display:block;color:#fff;container-type:inline-size'));
  assert.ok(source.includes('@container (max-width:410px)'));
 });
+
+test('overview supports click-to-expand the selected event schedule',()=>{
+ assert.match(source,/data-overview-index/);
+ assert.match(source,/this\._overviewExpandedKey/);
+ assert.match(source,/selected\.series,selected\.event/);
+ assert.match(source,/item\.series===e\.series&&item\.event===e\.event/);
+ assert.match(source,/aria-expanded/);
+});

@@ -117,3 +117,10 @@ test('editor retains dropdown DOM across routine hass state updates',()=>{
  editor.hass={locale:{language:'en-US'},states:{}};
  assert.equal(renders,3,'an actual language change triggers redraw');
 });
+
+test('overview-only options are hidden for series cards',()=>{
+ assert.match(source,/data-overview-only/);
+ assert.match(source,/this\._config\.view==='overview'\?'':'hidden'/);
+ assert.match(source,/label\[hidden\]\{display:none\}/);
+ assert.match(source,/label\.hidden=config\.view!=='overview'/);
+});

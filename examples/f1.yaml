@@ -1,7 +1,11 @@
+# Series Card – replace the optional navigation path with your own dashboard view.
 type: custom:motorsport-card
-calendar_entity: calendar.externa_sensorer_lightsouts
+calendar_entity: auto
+view: series
 series: F1
-days_ahead: 60
-hold_action:
-  action: navigate
-  navigation_path: /lovelace/f1-sensor
+language: auto
+days_ahead: 120
+# Optional: long press opens your F1 dashboard view.
+# hold_action:
+#   action: navigate
+#   navigation_path: /lovelace/f1-sensor

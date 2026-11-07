@@ -121,7 +121,7 @@ test('editor retains dropdown DOM across routine hass state updates',()=>{
 test('overview-only options are hidden for series cards',()=>{
  assert.match(source,/data-overview-only/);
  assert.match(source,/this\._config\.view==='overview'\?'':'hidden'/);
- assert.match(source,/label\[hidden\]\{display:none\}/);
+ assert.ok(source.includes('label[hidden],fieldset[hidden]{display:none}'));
  assert.match(source,/label\.hidden=config\.view!=='overview'/);
 });
 
@@ -143,7 +143,7 @@ test('overview expands full Series Card and keeps weekend schedule independent',
    querySelectorAll(selector){
      const html=this.innerHTML;
      const attr=selector.slice(1,-1).split('=')[0];
-     const matches=[...html.matchAll(new RegExp(attr+'="(\\\\d+)"','g'))].map(m=>m[1]);
+     const matches=[...html.matchAll(new RegExp(attr+'="([0-9]+)"','g'))].map(m=>m[1]);
      return [...new Set(matches)].map(value=>({
        dataset:attr==='data-overview-index'?{overviewIndex:value}:attr==='data-schedule-index'?{scheduleIndex:value}:{seriesHold:value},
        addEventListener(name,fn,capture){(listeners[attr+':'+value+':'+name+':'+Boolean(capture)]=fn)}

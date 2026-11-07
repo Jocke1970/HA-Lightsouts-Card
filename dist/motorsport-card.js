@@ -1,4 +1,18 @@
 /* HA Motorsport Card - dev preview */
+const calendarCache=new Map();
+async function getCalendarEvents(hass,entity,days,force=false){
+  const key=entity+'|'+days;
+  const cached=calendarCache.get(key);
+  if(!force&&cached&&Date.now()-cached.when<300000)return cached.promise;
+  const promise=hass.callWS({type:'call_service',domain:'calendar',service:'get_events',service_data:{duration:{days}},target:{entity_id:entity},return_response:true}).then(response=>{
+    const events=response?.response?.[entity]?.events??response?.[entity]?.events;
+    if(!Array.isArray(events))throw Error('Calendar response missing events');
+    return events.map(normalize).filter(e=>Number.isFinite(e.start)&&Number.isFinite(e.end)&&e.end>e.start).sort((a,b)=>a.start-b.start);
+  });
+  calendarCache.set(key,{when:Date.now(),promise});
+  promise.catch(()=>{if(calendarCache.get(key)?.promise===promise)calendarCache.delete(key)});
+  return promise;
+}
 const COLORS={F1:'#078b52',F2:'#a71048',F3:'#bc501d','F1 Academy':'#073b70',MotoGP:'#a30b43',Moto2:'#4e609e',Moto3:'#7044a6',WRC:'#d80025',WEC:'#224b90'};
 const FLAGS={Brazil:'🇧🇷',Qatar:'🇶🇦',Monaco:'🇲🇨',Portugal:'🇵🇹',Spain:'🇪🇸','United States':'🇺🇸','United Arab Emirates':'🇦🇪'};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
@@ -14,11 +28,47 @@ connectedCallback(){this.render()}
 disconnectedCallback(){clearInterval(this._timer);this._timer=null;clearTimeout(this._holdTimer)}
 getCardSize(){return this._expanded?6:3}
 static getStubConfig(){return {type:'custom:motorsport-card',calendar_entity:'calendar.lightsouts',series:'all'}}
+static getConfigElement(){return document.createElement('motorsport-card-editor')}
 tick(){const now=Date.now();if(now-this._lastFetch>=Math.max(5,Number(this._config.refresh_minutes)||30)*60000)this.fetchEvents();const next=this.choose(now);const key=next?.series+'|'+next?.event+'|'+next?.start+'|'+(next&&now>=next.start);if(key!==this._renderedKey){this.render();return}const cells=this.shadowRoot.querySelectorAll('[data-count]');if(cells.length===4){const values=next?clock(next.start-now):['--','--','--','--'];cells.forEach((el,i)=>{if(el.textContent!==values[i])el.textContent=values[i]})}}
 choose(now=Date.now()){const chosen=String(this._config.series||'all').toLowerCase();const filtered=this._events.filter(e=>(chosen==='all'||chosen===e.series.toLowerCase()||chosen===e.full.toLowerCase())&&e.end>now);return filtered.find(e=>e.start<=now&&now<e.end)||filtered[0]||null}
-async fetchEvents(){if(!this._hass||this._loading)return;this._loading=true;const generation=++this._refreshGeneration;try{const entity=this._config.calendar_entity;const days=Math.max(1,Math.min(365,Number(this._config.days_ahead)||60));const response=await this._hass.callWS({type:'call_service',domain:'calendar',service:'get_events',service_data:{duration:{days}},target:{entity_id:entity},return_response:true});const events=response?.response?.[entity]?.events??response?.[entity]?.events;if(!Array.isArray(events))throw Error('Calendar response missing events');if(generation!==this._refreshGeneration)return;this._events=events.map(normalize).filter(e=>Number.isFinite(e.start)&&Number.isFinite(e.end)&&e.end>e.start).sort((a,b)=>a.start-b.start);this._error=''}catch(e){if(generation===this._refreshGeneration)this._error=String(e.message||e)}finally{this._loading=false;this._lastFetch=Date.now();this.render()}}
+async fetchEvents(){if(!this._hass||this._loading)return;this._loading=true;const generation=++this._refreshGeneration;try{const entity=this._config.calendar_entity;const days=Math.max(1,Math.min(365,Number(this._config.days_ahead)||60));const events=await getCalendarEvents(this._hass,entity,days);if(generation!==this._refreshGeneration)return;this._events=events;this._error=''}catch(e){if(generation===this._refreshGeneration)this._error=String(e.message||e)}finally{this._loading=false;this._lastFetch=Date.now();this.render()}}
 onHold(){const a=this._config.hold_action||{};if(a.action==='navigate'&&typeof a.navigation_path==='string'&&a.navigation_path.startsWith('/')){history.pushState(null,'',a.navigation_path);window.dispatchEvent(new Event('location-changed'))}else if(a.action==='more-info'){this.dispatchEvent(new CustomEvent('hass-more-info',{detail:{entityId:this._config.calendar_entity},bubbles:true,composed:true}))}}
 render(){if(!this.shadowRoot)return;const now=Date.now(),chosen=String(this._config.series||'all').toLowerCase();const filtered=this._events.filter(e=>(chosen==='all'||chosen===e.series.toLowerCase()||chosen===e.full.toLowerCase())&&e.end>now);const next=this.choose(now),current=next&&next.start<=now&&now<next.end,accent=COLORS[next?.series]||'#174a80',values=next?clock(next.start-now):['--','--','--','--'];const schedule=next?filtered.filter(e=>e.series===next.series&&e.event===next.event):[];this._renderedKey=next?.series+'|'+next?.event+'|'+next?.start+'|'+!!current;this.shadowRoot.innerHTML=`<style>${css}</style><div class="shell ${this._config.compact?'compact':''}" style="--accent:${accent}"><div class="top"><span class="badge">🏁 ${esc(next?.series||this._config.series||'Motorsport')}</span><span class="status">${current?'🔴 Schemalagd tid pågår':next?'Nästa session':'Kalender'}</span></div><div class="title">${esc(next?.event||'Ingen kommande session')}</div><div class="place">${FLAGS[next?.country]||'🏁'} ${esc(next?.location||'')}</div><div class="count">${values.map((n,i)=>`<div class="cell"><div class="num" data-count>${n}</div><div class="unit">${['Dagar','Timmar','Minuter','Sekunder'][i]}</div></div>`).join('')}</div><div class="bottom"><span>${esc(next?.session||'Inga händelser')}</span><span>${next?(next.allDay?'Heldag':fmt(next.start)):'—'}</span></div>${this._expanded?`<div class="schedule"><strong>Helgschema</strong>${schedule.map(e=>`<div class="line"><span>${esc(e.session)}</span><span>${e.allDay?'Heldag':fmt(e.start)}</span></div>`).join('')||'<p>Inga sessioner</p>'}</div>`:''}${this._error?`<div class="error">Kalender: ${esc(this._error)}</div>`:''}<button class="btn" type="button" aria-expanded="${this._expanded}">${this._expanded?'Dölj helgschema':'Visa helgschema'}</button></div>`;const root=this.shadowRoot.querySelector('.shell');root.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;this._held=false;this._startPos=[e.clientX,e.clientY];clearTimeout(this._holdTimer);this._holdTimer=setTimeout(()=>{this._held=true;this.onHold()},650)});root.addEventListener('pointermove',e=>{if(this._startPos&&Math.hypot(e.clientX-this._startPos[0],e.clientY-this._startPos[1])>12)clearTimeout(this._holdTimer)});for(const kind of ['pointerup','pointercancel','pointerleave'])root.addEventListener(kind,()=>clearTimeout(this._holdTimer));root.addEventListener('contextmenu',e=>{if((this._config.hold_action||{}).action!=='none')e.preventDefault()});root.addEventListener('click',e=>{if(e.target.closest('button')||this._held)return;this._expanded=!this._expanded;this.render()});root.querySelector('button').addEventListener('click',e=>{e.stopPropagation();this._expanded=!this._expanded;this.render()})}
 }
 if(!customElements.get('motorsport-card'))customElements.define('motorsport-card',MotorsportCard);
 window.customCards=window.customCards||[];if(!window.customCards.some(c=>c.type==='motorsport-card'))window.customCards.push({type:'motorsport-card',name:'Motorsport Card (dev)',description:'Lightsouts calendar countdown and schedule'});
+
+class MotorsportCardEditor extends HTMLElement{
+  constructor(){super();this.attachShadow({mode:'open'});this._config={}}
+  setConfig(config){this._config={...config};this.render()}
+  set hass(h){this._hass=h}
+  render(){
+    this.shadowRoot.innerHTML=`<style>
+    :host{display:block;color:var(--primary-text-color);font:inherit}
+    .fields{display:grid;gap:12px;padding:12px}
+    label{display:grid;gap:5px;font-size:13px}
+    input,select{background:var(--card-background-color);color:var(--primary-text-color);border:1px solid var(--divider-color,#888);border-radius:6px;padding:9px;width:100%;font:inherit}
+    .check{display:flex;align-items:center}.check input{width:auto;margin-right:8px}
+    small{opacity:.7}
+    </style><div class="fields">
+    <label>Kalenderentitet<input data-key="calendar_entity" value="${esc(this._config.calendar_entity||'calendar.lightsouts')}"></label>
+    <label>Serie (F1, MotoGP, WRC eller all)<input data-key="series" value="${esc(this._config.series||'all')}"></label>
+    <label>Antal dagar framåt<input type="number" min="1" max="365" data-key="days_ahead" value="${Number(this._config.days_ahead)||60}"></label>
+    <label>Uppdateringsintervall (minuter)<input type="number" min="5" max="1440" data-key="refresh_minutes" value="${Number(this._config.refresh_minutes)||30}"></label>
+    <label class="check"><input type="checkbox" data-key="compact" ${this._config.compact?'checked':''}> Kompakt kort</label>
+    <label>Vid långt tryck<select data-key="hold_action"><option value="none">Ingen åtgärd</option><option value="navigate" ${this._config.hold_action?.action==='navigate'?'selected':''}>Öppna dashboardflik</option><option value="more-info" ${this._config.hold_action?.action==='more-info'?'selected':''}>Mer information</option></select></label>
+    <label>Dashboardens navigeringssökväg<input data-key="navigation_path" placeholder="/lovelace/f1-sensor" value="${esc(this._config.hold_action?.navigation_path||'')}"><small>Använd exakt sökväg från Home Assistant.</small></label>
+    </div>`;
+    for(const el of this.shadowRoot.querySelectorAll('[data-key]'))el.addEventListener('change',()=>{
+      const key=el.dataset.key,config={...this._config};
+      if(key==='hold_action')config.hold_action={...config.hold_action,action:el.value};
+      else if(key==='navigation_path')config.hold_action={...config.hold_action,navigation_path:el.value};
+      else if(key==='compact')config.compact=el.checked;
+      else if(key==='days_ahead'||key==='refresh_minutes')config[key]=Number(el.value);
+      else config[key]=el.value;
+      this._config=config;
+      this.dispatchEvent(new CustomEvent('config-changed',{detail:{config},bubbles:true,composed:true}));
+    });
+  }
+}
+if(!customElements.get('motorsport-card-editor'))customElements.define('motorsport-card-editor',MotorsportCardEditor);

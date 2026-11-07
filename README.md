@@ -18,6 +18,7 @@ A Lovelace dashboard card for [Lightsouts Motorsport Calendar](https://github.co
 - Series-specific accent colors and circuit/country labels
 - Expandable schedule that includes retained completed sessions (struck through), as well as the next session highlighted
 - Multi-series overview with selectable vertical list or responsive two-column grid, sorted by upcoming or currently scheduled sessions; simultaneous starts are supported
+- Tap a series in the overview to expand that specific event's race-weekend schedule; tap again to collapse it
 - Compact mode and responsive layout
 - Tap to expand the session list; configurable long press (650 ms) for dashboard navigation or more-info
 - Visual card editor for calendar, series, view, horizon and hold behavior

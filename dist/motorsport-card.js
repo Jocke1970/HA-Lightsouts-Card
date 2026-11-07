@@ -131,14 +131,14 @@ class MotorsportCardEditor extends HTMLElement{
     this.shadowRoot.innerHTML=`<style>
     :host{display:block;color:var(--primary-text-color);font:inherit}
     .fields{display:grid;gap:12px;padding:12px}
-    label{display:grid;gap:5px;font-size:13px}
+    label{display:grid;gap:5px;font-size:13px}label[hidden]{display:none}
     input,select{background:var(--card-background-color);color:var(--primary-text-color);border:1px solid var(--divider-color,#888);border-radius:6px;padding:9px;width:100%;font:inherit}
     .check{display:flex;align-items:center}.check input{width:auto;margin-right:8px}
     small{opacity:.7}
     </style><div class="fields">
     <label>${esc(tr(lang,'language'))}<select data-key="language"><option value="auto" ${!this._config.language||this._config.language==='auto'?'selected':''}>${esc(tr(lang,'language_auto'))}</option><option value="en" ${this._config.language==='en'?'selected':''}>English</option><option value="es" ${this._config.language==='es'?'selected':''}>Español</option><option value="sv" ${this._config.language==='sv'?'selected':''}>Svenska</option></select></label><label>${esc(tr(lang,'calendar_entity'))}<input data-key="calendar_entity" value="${esc(this._config.calendar_entity||'auto')}"></label>
     <label>${esc(tr(lang,'view'))}<select data-key="view"><option value="series" ${this._config.view!=='overview'?'selected':''}>${esc(tr(lang,'view_series'))}</option><option value="overview" ${this._config.view==='overview'?'selected':''}>${esc(tr(lang,'view_overview'))}</option></select></label>
-    <label>${esc(tr(lang,'layout'))}<select data-key="overview_layout"><option value="list" ${this._config.overview_layout!=="grid"?"selected":""}>${esc(tr(lang,'layout_list'))}</option><option value="grid" ${this._config.overview_layout==="grid"?"selected":""}>${esc(tr(lang,'layout_grid'))}</option></select></label><label>${esc(tr(lang,'max_series'))}<input type="number" min="1" max="30" data-key="max_series" value="${Number(this._config.max_series)||12}"></label>
+    <label data-overview-only ${this._config.view==='overview'?'':'hidden'}>${esc(tr(lang,'layout'))}<select data-key="overview_layout"><option value="list" ${this._config.overview_layout!=="grid"?"selected":""}>${esc(tr(lang,'layout_list'))}</option><option value="grid" ${this._config.overview_layout==="grid"?"selected":""}>${esc(tr(lang,'layout_grid'))}</option></select></label><label data-overview-only ${this._config.view==='overview'?'':'hidden'}>${esc(tr(lang,'max_series'))}<input type="number" min="1" max="30" data-key="max_series" value="${Number(this._config.max_series)||12}"></label>
     <label>${esc(tr(lang,'series'))}<input data-key="series" value="${esc(this._config.series||'all')}"></label>
     <label>${esc(tr(lang,'days_ahead'))}<input type="number" min="1" max="365" data-key="days_ahead" value="${Number(this._config.days_ahead)||120}"></label>
     <label>${esc(tr(lang,'refresh'))}<input type="number" min="5" max="1440" data-key="refresh_minutes" value="${Number(this._config.refresh_minutes)||30}"></label>
@@ -155,6 +155,7 @@ class MotorsportCardEditor extends HTMLElement{
       else config[key]=el.value;
       this._config=config;
       if(key==='language')this.render();
+      if(key==='view')this.shadowRoot.querySelectorAll('[data-overview-only]').forEach(label=>{label.hidden=config.view!=='overview'});
       this.dispatchEvent(new CustomEvent('config-changed',{detail:{config},bubbles:true,composed:true}));
     });
   }

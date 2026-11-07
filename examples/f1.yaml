@@ -1,0 +1,7 @@
+type: custom:motorsport-card
+calendar_entity: calendar.externa_sensorer_lightsouts
+series: F1
+days_ahead: 60
+hold_action:
+  action: navigate
+  navigation_path: /lovelace/f1-sensor

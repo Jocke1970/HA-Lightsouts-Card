@@ -190,3 +190,20 @@ test('new translation keys are present for all languages',()=>{
      assert.equal(typeof catalog[lang][key],'string',lang+': '+key);
  }
 });
+
+test('overview only exposes per-series shortcut controls, while Series Card keeps single hold action',()=>{
+ assert.ok(source.includes('data-series-only'));
+ assert.ok(source.includes("field.hidden=config.view==='overview'"));
+ assert.ok(source.includes("field.hidden=config.view!=='overview'"));
+ assert.ok(source.includes('data-key="shortcut_series"'));
+ assert.ok(source.includes('data-key="shortcut_action"'));
+ assert.ok(source.includes('data-key="shortcut_path"'));
+});
+test('invalid per-series navigation target does not intercept regular taps',()=>{
+ const Card=registrations.get('motorsport-card');
+ const card=Object.create(Card.prototype);
+ card._config={hold_actions:{F1:{action:'navigate',navigation_path:'not/a/dashboard'}}};
+ assert.equal(card.hasSeriesHold('F1'),false);
+ card._config.hold_actions.F1.navigation_path='/lovelace/f1-sensor';
+ assert.equal(card.hasSeriesHold('F1'),true);
+});

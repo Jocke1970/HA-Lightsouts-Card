@@ -1,4 +1,4 @@
-# HA Motorsport Card 🏁
+# HA Lightsouts Card 🏁
 
 A Lovelace dashboard card for [Lightsouts Motorsport Calendar](https://github.com/mm98/ha-lightsouts-motorsport-calendar). Displays upcoming sessions with a live countdown, expandable race-weekend schedule and a multi-series motorsport overview.
 
@@ -10,7 +10,7 @@ A Lovelace dashboard card for [Lightsouts Motorsport Calendar](https://github.co
 
 *Illustrative design mockup. The final appearance in Home Assistant may differ.*
 
-> **Development preview** — currently on `dev`. No production or beta release has been published or validated inside Home Assistant yet.
+> **Release status:** Tested in Home Assistant through the `2026.11.0b4` beta. Stable releases are published from `main` after validation.
 
 ## Features
 
@@ -76,19 +76,19 @@ days_ahead: 120
 
 See [more configuration examples](examples/).
 
-## Installation status
+## Installation
 
-This project is being developed for the Home Assistant Marketplace / HACS as a **Dashboard (plugin)** repository.
+Install **HA Lightsouts Card** from Home Assistant Marketplace as an **Instrumentpanel / Dashboard** repository. Choose the latest stable version for normal use or enable prereleases for beta testing.
 
-`hacs.json` points to the self-contained bundle `dist/motorsport-card.js`. The Marketplace can register the JS module automatically when a valid release is available; do not treat the `dev` branch as a supported release.
+`hacs.json` points to the self-contained bundle `dist/motorsport-card.js`. The Marketplace can register the JavaScript module automatically. Do not install the `dev` branch in a production Home Assistant.
 
-For temporary **manual testing only**, copy `dist/motorsport-card.js` to `config/www/motorsport-card.js`, then add the following dashboard resource of type **JavaScript module**:
+For **manual installation**, copy `dist/motorsport-card.js` to `config/www/motorsport-card.js`, then add the following dashboard resource of type **JavaScript module**:
 
 ```
 /local/motorsport-card.js
 ```
 
-Reload the browser and add one of the YAML examples above. This route is for development; release installs will use the Marketplace-managed resource.
+Reload the browser and add one of the YAML examples above. Marketplace installations should use the Marketplace-managed resource.
 
 ## Release process
 
@@ -105,10 +105,10 @@ GitHub Actions includes both JavaScript testing and Marketplace/HACS repository 
 
 ## Roadmap
 
-- Real-world Home Assistant tests (calendar response shape, long press on touch)
-- Improve schedule grouping, status handling, accessibility and localization
-- Full set of series styles and screenshot documentation
-- Beta release, then stable release after feedback
+- Expand overview entries into a full Series Card, with independent weekend-schedule toggle
+- Per-series configurable long-press navigation destinations
+- Improve compact mode and accessibility
+- Expand translations and screenshot documentation
 
 ## Credits
 

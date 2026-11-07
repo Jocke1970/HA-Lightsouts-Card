@@ -32,6 +32,28 @@ A Lovelace dashboard card for [Lightsouts Motorsport Calendar](https://github.co
 
 Requires the third-party Lightsouts integration and its calendar. The calendar entity might be `calendar.lightsouts` or, depending on your installation, e.g. `calendar.externa_sensorer_lightsouts`. Set the actual entity ID in the card editor.
 
+## Interactive Motorsport Overview (development)
+
+In the upcoming development version, tapping a series entry in the overview expands it into a full Series Card with its own countdown and event information. Tap the main part of the expanded Series Card again to collapse it. The **Show weekend schedule** button independently opens and closes the session list without collapsing the card. Only one series is expanded at a time; the behavior works with both vertical list and two-column grid.
+
+Optional per-series long-press destinations can be configured in the visual card editor or via YAML:
+
+```yaml
+type: custom:motorsport-card
+calendar_entity: auto
+view: overview
+overview_layout: grid
+hold_actions:
+  F1:
+    action: navigate
+    navigation_path: /lovelace/f1-sensor
+  MotoGP:
+    action: navigate
+    navigation_path: /lovelace/motogp
+```
+
+The map is keyed by the series name reported by Lightsouts. Series without configured shortcuts keep their normal tap-to-expand behavior. Existing individual Series Cards retain their `hold_action` configuration. Dashboard paths above are examples and must be replaced with real Home Assistant view URLs.
+
 ## Languages
 
 The card supports **English, Spanish and Swedish**. Set `language: auto` (default) to follow the Home Assistant frontend language, or force a language per card with `language: en`, `language: es`, or `language: sv`.

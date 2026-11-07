@@ -1,0 +1,30 @@
+/* Run: node --test tests/card.test.cjs */
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const vm = require('node:vm');
+const fs = require('node:fs');
+const path = require('node:path');
+const source = fs.readFileSync(path.join(__dirname, '../dist/motorsport-card.js'), 'utf8');
+const registrations = new Map();
+const sandbox = {HTMLElement: class {}, customElements: {get: n=>registrations.get(n),define: (n,v)=>registrations.set(n,v)},window:{customCards:[]},Intl,Date,Math,String,Number,Array,Map,Error,RegExp,Promise,setInterval,clearInterval,clearTimeout,setTimeout};
+vm.createContext(sandbox);
+vm.runInContext(source,sandbox);
+const normalize = e => vm.runInContext('normalize('+JSON.stringify(e)+')',sandbox);
+test('registers card and editor',()=>{assert.ok(registrations.has('motorsport-card'));assert.ok(registrations.has('motorsport-card-editor'))});
+test('MotoGP session description and UTC timestamps',()=>{
+ const e=normalize({summary:'MotoGP: Losail International Circuit (Qatar)',start:'2026-11-08T12:40:00+00:00',end:'2026-11-08T12:50:00+00:00',description:'Series: MotoGP,\nEvent: Qatar Grand Prix,\nSession: Warm Up,\nLocation: Losail International Circuit, Qatar'});
+ assert.equal(e.series,'MotoGP');assert.equal(e.event,'Qatar Grand Prix');assert.equal(e.session,'Warm Up');assert.equal(e.country,'Qatar');assert.equal(e.start,Date.parse('2026-11-08T12:40:00Z'));
+});
+test('F1 and F1 Academy are different series',()=>{
+ const mk=summary=>normalize({summary,start:'2026-11-21T04:00:00Z',end:'2026-11-21T06:00:00Z',description:'Event: Las Vegas'});
+ assert.equal(mk('F1: Las Vegas Street Circuit').series,'F1');
+ assert.equal(mk('F1 Academy: Las Vegas Street Circuit').series,'F1 Academy');
+});
+test('WRC calendar date-only entries are all-day',()=>{
+ const e=normalize({summary:'WRC: Monte-Carlo',start:'2027-01-21',end:'2027-01-25',description:'Series: WRC,\nEvent: Rallye Monte-Carlo,\nSession: Rally'});
+ assert.equal(e.allDay,true);assert.equal(e.event,'Rallye Monte-Carlo');
+ assert.equal(new Date(e.start).getHours(),0);
+});
+test('countdown returns days/hours/minutes/seconds',()=>{
+ assert.equal(JSON.stringify(vm.runInContext('clock(90123000)',sandbox)),JSON.stringify(['01','01','02','03']));
+});

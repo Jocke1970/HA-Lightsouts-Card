@@ -11,9 +11,9 @@ Display the next motorsport sessions with countdowns, race-weekend schedules and
 ## Features
 
 - **Series Card:** countdown in days, hours and minutes, event and circuit information, country flag, and series-specific styling
-- **Motorsport Overview:** upcoming sessions from multiple series, in a vertical list or a responsive two-column grid
-- **Weekend schedule:** expand the schedule for a selected event, including past sessions when the calendar retains them
-- **Configurable long press:** navigate from an individual Series Card to another Home Assistant dashboard view
+- **Motorsport Overview:** upcoming sessions from multiple series, in a vertical list or a responsive two-column grid; tap a series to expand a full Series Card and tap again to collapse it
+- **Weekend schedule:** independently open and close the schedule inside an expanded Series Card, including past sessions when the calendar retains them
+- **Configurable long press:** navigate from individual Series Cards or define a separate dashboard shortcut for each series in the overview
 - **Visual editor:** configure series, calendar, language, view and layout
 - **Languages:** English, Spanish and Swedish; automatic language selection based on Home Assistant
 - **Responsive layout:** suitable for desktop and mobile dashboards
@@ -63,6 +63,25 @@ language: auto
 Set `overview_layout: list` for the vertical layout. The default calendar setting, `auto`, detects a unique Lightsouts calendar even if its entity ID is customized.
 
 Additional examples are available in the [examples folder](examples/).
+
+## Per-series dashboard shortcuts
+
+Configure optional long-press actions in the visual editor, or use `hold_actions` in YAML for the Motorsport Overview:
+
+```yaml
+type: custom:motorsport-card
+view: overview
+calendar_entity: auto
+hold_actions:
+  F1:
+    action: navigate
+    navigation_path: /lovelace/f1-sensor
+  MotoGP:
+    action: navigate
+    navigation_path: /lovelace/motogp
+```
+
+Replace the example paths with your own dashboard URLs. A normal tap expands the selected Series Card; the **Show weekend schedule** button operates independently. Only one series expands at a time. Unconfigured shortcuts do not affect ordinary taps.
 
 ## Language
 

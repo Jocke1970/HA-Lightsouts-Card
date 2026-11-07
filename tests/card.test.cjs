@@ -28,3 +28,18 @@ test('WRC calendar date-only entries are all-day',()=>{
 test('countdown returns days/hours/minutes/seconds',()=>{
  assert.equal(JSON.stringify(vm.runInContext('clock(90123000)',sandbox)),JSON.stringify(['01','01','02','03']));
 });
+
+test('human countdown for overview uses days hours minutes',()=>{
+ assert.equal(vm.runInContext('shortCountdown(90123000)',sandbox),'01d 01h 02m');
+});
+test('schedule session categories use distinct icon names',()=>{
+ assert.equal(vm.runInContext("scheduleIcon('Free Practice 1')",sandbox),'🔧');
+ assert.equal(vm.runInContext("scheduleIcon('Qualifying')",sandbox),'⏱');
+ assert.equal(vm.runInContext("scheduleIcon('Sprint')",sandbox),'⚡');
+});
+test('overview and series card expose layout options',()=>{
+ const Card=registrations.get('motorsport-card');
+ const sourceText=String(Card);
+ assert.match(sourceText,/overview_layout/);
+ assert.match(sourceText,/data-count/);
+});

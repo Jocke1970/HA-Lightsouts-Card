@@ -98,3 +98,22 @@ test('language selector exists in Lovelace visual editor',()=>{
  assert.match(source,/language_auto/);
  assert.match(source,/if\(key==='language'\)this\.render\(\)/);
 });
+
+test('editor retains dropdown DOM across routine hass state updates',()=>{
+ const Editor=registrations.get('motorsport-card-editor');
+ const editor=Object.create(Editor.prototype);
+ editor._config={language:'auto',view:'overview'};
+ let renders=0;
+ editor.render=()=>{renders++};
+ editor.hass={locale:{language:'sv-SE'},states:{a:{state:'1'}}};
+ assert.equal(renders,1,'initial locale switch may redraw');
+ editor.hass={locale:{language:'sv-SE'},states:{a:{state:'2'}}};
+ editor.hass={locale:{language:'sv-SE'},states:{a:{state:'3'}}};
+ assert.equal(renders,1,'entity updates must not rebuild input elements');
+ editor.setConfig({language:'auto',view:'overview'});
+ assert.equal(renders,1,'config echoes should not rebuild input elements');
+ editor.setConfig({language:'auto',view:'series'});
+ assert.equal(renders,2,'real configuration changes still redraw');
+ editor.hass={locale:{language:'en-US'},states:{}};
+ assert.equal(renders,3,'an actual language change triggers redraw');
+});

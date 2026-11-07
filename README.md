@@ -32,6 +32,20 @@ A Lovelace dashboard card for [Lightsouts Motorsport Calendar](https://github.co
 
 Requires the third-party Lightsouts integration and its calendar. The calendar entity might be `calendar.lightsouts` or, depending on your installation, e.g. `calendar.externa_sensorer_lightsouts`. Set the actual entity ID in the card editor.
 
+## Languages
+
+The card supports **English, Spanish and Swedish**. Set `language: auto` (default) to follow the Home Assistant frontend language, or force a language per card with `language: en`, `language: es`, or `language: sv`.
+
+```yaml
+type: custom:motorsport-card
+calendar_entity: auto
+view: overview
+overview_layout: grid
+language: es
+```
+
+Translations are maintained in `translations/en.json`, `translations/es.json`, and `translations/sv.json`, then embedded into the single distributable `dist/motorsport-card.js` file so no additional requests are needed at runtime. Unknown locale codes fall back to English. Motorsport event and circuit names remain sourced from Lightsouts, while recognized session types are translated. To add another language, add a matching translation catalog and include it in the bundle.
+
 ## YAML examples
 
 ### Formula 1 card with long press navigation

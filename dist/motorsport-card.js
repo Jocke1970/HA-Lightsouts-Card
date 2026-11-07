@@ -165,7 +165,7 @@ onHoldForSeries(series){
  const actions=this._config.hold_actions||{};
  const key=Object.keys(actions).find(name=>name.toLowerCase()===String(series).toLowerCase());
  const action=key?actions[key]:null;
- if(action)this.performHoldAction(action);
+ if(action&&action.action!=='none')this.performHoldAction(action);
 }
 performHoldAction(a){
  if(a?.action==='navigate'&&typeof a.navigation_path==='string'&&a.navigation_path.startsWith('/')){

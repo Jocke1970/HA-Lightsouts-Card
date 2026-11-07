@@ -5,7 +5,7 @@ async function getCalendarEvents(hass,entity,days,force=false){
   const cached=calendarCache.get(key);
   if(!force&&cached&&Date.now()-cached.when<300000)return cached.promise;
   const promise=hass.callWS({type:'call_service',domain:'calendar',service:'get_events',service_data:{duration:{days}},target:{entity_id:entity},return_response:true}).then(response=>{
-    const events=response?.response?.[entity]?.events??response?.[entity]?.events;
+    const events=response?.response?.[entity]?.events??response?.[entity]?.events??response?.result?.response?.[entity]?.events;
     if(!Array.isArray(events))throw Error('Calendar response missing events');
     return events.map(normalize).filter(e=>Number.isFinite(e.start)&&Number.isFinite(e.end)&&e.end>e.start).sort((a,b)=>a.start-b.start);
   });

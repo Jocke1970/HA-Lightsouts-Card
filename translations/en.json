@@ -51,5 +51,12 @@
   "race": "Race",
   "feature_race": "Feature Race",
   "reverse_grid_race": "Reverse Grid Race",
-  "rally": "Rally"
+  "rally": "Rally",
+  "expand_series": "Expand series card",
+  "collapse_series": "Collapse series card",
+  "series_shortcuts": "Series shortcuts (optional)",
+  "shortcut_series": "Series",
+  "shortcut_action": "Shortcut action",
+  "shortcut_path": "Dashboard path for selected series",
+  "shortcut_help": "Long press on this series in Motorsport Overview. Leave action as None to disable."
 }

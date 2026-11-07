@@ -65,7 +65,7 @@ const css=`:host{display:block;color:#fff;container-type:inline-size}*{box-sizin
 class MotorsportCard extends HTMLElement{
 constructor(){super();this.attachShadow({mode:'open'});this._config={};this._events=[];this._expanded=false;this._lastFetch=0;this._loading=false;this._timer=null;this._holdTimer=null;this._held=false;this._startPos=null;this._renderedKey='';this._refreshGeneration=0;this._overviewExpandedKey=null}
 setConfig(config){if(!config||typeof config!=='object')throw Error('Missing config');this._config={calendar_entity:'auto',series:'all',days_ahead:120,refresh_minutes:30,view:'series',language:'auto',overview_layout:'list',compact:false,hold_action:{action:'none'},...config};this._lastFetch=0;this._renderedKey='';this.render();this.fetchEvents()}
-set hass(h){this._hass=h;if(!this._timer)this._timer=setInterval(()=>this.tick(),1000);if(!this._lastFetch)this.fetchEvents()}
+set hass(h){const previous=resolveLanguage(this._config.language,this._hass);this._hass=h;if(previous!==resolveLanguage(this._config.language,h))this.render();if(!this._timer)this._timer=setInterval(()=>this.tick(),1000);if(!this._lastFetch)this.fetchEvents()}
 connectedCallback(){this.render()}
 disconnectedCallback(){clearInterval(this._timer);this._timer=null;clearTimeout(this._holdTimer)}
 getCardSize(){return this._config.view==='overview'?Math.max(3,Math.min(8,this._events.length)):this._expanded?6:3}
@@ -125,15 +125,15 @@ class MotorsportCardEditor extends HTMLElement{
     .check{display:flex;align-items:center}.check input{width:auto;margin-right:8px}
     small{opacity:.7}
     </style><div class="fields">
-    <label>${esc(tr(lang,'language'))}<select data-key="language"><option value="auto" ${!this._config.language||this._config.language==='auto'?'selected':''}>${esc(tr(lang,'language_auto'))}</option><option value="en" ${this._config.language==='en'?'selected':''}>English</option><option value="es" ${this._config.language==='es'?'selected':''}>Español</option><option value="sv" ${this._config.language==='sv'?'selected':''}>Svenska</option></select></label><label>Kalenderentitet<input data-key="calendar_entity" value="${esc(this._config.calendar_entity||'auto')}"></label>
-    <label>Visningsläge<select data-key="view"><option value="series" ${this._config.view!=='overview'?'selected':''}>Seriekort</option><option value="overview" ${this._config.view==='overview'?'selected':''}>Motorsportöversikt</option></select></label>
-    <label>Layout för översikten<select data-key="overview_layout"><option value="list" ${this._config.overview_layout!=="grid"?"selected":""}>Vertikal lista</option><option value="grid" ${this._config.overview_layout==="grid"?"selected":""}>Rutnät (två kolumner)</option></select></label><label>Max antal serier i översikten<input type="number" min="1" max="30" data-key="max_series" value="${Number(this._config.max_series)||12}"></label>
-    <label>Serie (F1, MotoGP, WRC eller all)<input data-key="series" value="${esc(this._config.series||'all')}"></label>
-    <label>Antal dagar framåt<input type="number" min="1" max="365" data-key="days_ahead" value="${Number(this._config.days_ahead)||120}"></label>
-    <label>Uppdateringsintervall (minuter)<input type="number" min="5" max="1440" data-key="refresh_minutes" value="${Number(this._config.refresh_minutes)||30}"></label>
-    <label class="check"><input type="checkbox" data-key="compact" ${this._config.compact?'checked':''}> Kompakt kort</label>
-    <label>Vid långt tryck<select data-key="hold_action"><option value="none">Ingen åtgärd</option><option value="navigate" ${this._config.hold_action?.action==='navigate'?'selected':''}>Öppna dashboardflik</option><option value="more-info" ${this._config.hold_action?.action==='more-info'?'selected':''}>Mer information</option></select></label>
-    <label>Dashboardens navigeringssökväg<input data-key="navigation_path" placeholder="/lovelace/f1-sensor" value="${esc(this._config.hold_action?.navigation_path||'')}"><small>Använd exakt sökväg från Home Assistant.</small></label>
+    <label>${esc(tr(lang,'language'))}<select data-key="language"><option value="auto" ${!this._config.language||this._config.language==='auto'?'selected':''}>${esc(tr(lang,'language_auto'))}</option><option value="en" ${this._config.language==='en'?'selected':''}>English</option><option value="es" ${this._config.language==='es'?'selected':''}>Español</option><option value="sv" ${this._config.language==='sv'?'selected':''}>Svenska</option></select></label><label>${esc(tr(lang,'calendar_entity'))}<input data-key="calendar_entity" value="${esc(this._config.calendar_entity||'auto')}"></label>
+    <label>${esc(tr(lang,'view'))}<select data-key="view"><option value="series" ${this._config.view!=='overview'?'selected':''}>${esc(tr(lang,'view_series'))}</option><option value="overview" ${this._config.view==='overview'?'selected':''}>${esc(tr(lang,'view_overview'))}</option></select></label>
+    <label>${esc(tr(lang,'layout'))}<select data-key="overview_layout"><option value="list" ${this._config.overview_layout!=="grid"?"selected":""}>${esc(tr(lang,'layout_list'))}</option><option value="grid" ${this._config.overview_layout==="grid"?"selected":""}>${esc(tr(lang,'layout_grid'))}</option></select></label><label>${esc(tr(lang,'max_series'))}<input type="number" min="1" max="30" data-key="max_series" value="${Number(this._config.max_series)||12}"></label>
+    <label>${esc(tr(lang,'series'))}<input data-key="series" value="${esc(this._config.series||'all')}"></label>
+    <label>${esc(tr(lang,'days_ahead'))}<input type="number" min="1" max="365" data-key="days_ahead" value="${Number(this._config.days_ahead)||120}"></label>
+    <label>${esc(tr(lang,'refresh'))}<input type="number" min="5" max="1440" data-key="refresh_minutes" value="${Number(this._config.refresh_minutes)||30}"></label>
+    <label class="check"><input type="checkbox" data-key="compact" ${this._config.compact?'checked':''}> ${esc(tr(lang,'compact'))}</label>
+    <label>${esc(tr(lang,'hold_action'))}<select data-key="hold_action"><option value="none">${esc(tr(lang,'hold_none'))}</option><option value="navigate" ${this._config.hold_action?.action==='navigate'?'selected':''}>${esc(tr(lang,'hold_navigate'))}</option><option value="more-info" ${this._config.hold_action?.action==='more-info'?'selected':''}>${esc(tr(lang,'hold_more'))}</option></select></label>
+    <label>${esc(tr(lang,'navigation_path'))}<input data-key="navigation_path" placeholder="/lovelace/f1-sensor" value="${esc(this._config.hold_action?.navigation_path||'')}"><small>${esc(tr(lang,'navigation_help'))}</small></label>
     </div>`;
     for(const el of this.shadowRoot.querySelectorAll('[data-key]'))el.addEventListener('change',()=>{
       const key=el.dataset.key,config={...this._config};
@@ -143,6 +143,7 @@ class MotorsportCardEditor extends HTMLElement{
       else if(['days_ahead','refresh_minutes','max_series'].includes(key))config[key]=Number(el.value);
       else config[key]=el.value;
       this._config=config;
+      if(key==='language')this.render();
       this.dispatchEvent(new CustomEvent('config-changed',{detail:{config},bubbles:true,composed:true}));
     });
   }

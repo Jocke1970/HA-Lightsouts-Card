@@ -114,8 +114,19 @@ window.customCards=window.customCards||[];if(!window.customCards.some(c=>c.type=
 
 class MotorsportCardEditor extends HTMLElement{
   constructor(){super();this.attachShadow({mode:'open'});this._config={}}
-  setConfig(config){this._config={...config};this.render()}
-  set hass(h){this._hass=h;this.render()}
+  setConfig(config){
+    const incoming={...config};
+    const changed=JSON.stringify(incoming)!==JSON.stringify(this._config);
+    this._config=incoming;
+    // HA echoes config-changed back to the editor. Keep focused inputs alive.
+    if(changed)this.render();
+  }
+  set hass(h){
+    const previous=resolveLanguage(this._config.language,this._hass);
+    this._hass=h;
+    // Entity and sensor updates must not replace active select/input elements.
+    if(previous!==resolveLanguage(this._config.language,h))this.render();
+  }
   render(){const lang=resolveLanguage(this._config.language,this._hass);
     this.shadowRoot.innerHTML=`<style>
     :host{display:block;color:var(--primary-text-color);font:inherit}

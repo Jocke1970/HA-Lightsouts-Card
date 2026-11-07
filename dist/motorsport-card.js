@@ -13,8 +13,8 @@ async function getCalendarEvents(hass,entity,days,force=false){
   promise.catch(()=>{if(calendarCache.get(key)?.promise===promise)calendarCache.delete(key)});
   return promise;
 }
-const COLORS={F1:'#078b52',F2:'#a71048',F3:'#bc501d','F1 Academy':'#073b70',MotoGP:'#a30b43',Moto2:'#4e609e',Moto3:'#7044a6',WRC:'#d80025',WEC:'#224b90'};
-const FLAGS={Brazil:'🇧🇷',Qatar:'🇶🇦',Monaco:'🇲🇨',Portugal:'🇵🇹',Spain:'🇪🇸','United States':'🇺🇸','United Arab Emirates':'🇦🇪'};
+const COLORS={F1:'#078b52',F2:'#a71048',F3:'#bc501d','F1 Academy':'#073b70',MotoGP:'#a30b43',Moto2:'#4e609e',Moto3:'#7044a6',WRC:'#d80025',WEC:'#224b90',IMSA:'#226d89',IndyCar:'#bd3030','Indy NXT':'#366ba0',NASCAR:'#bd3030',"NASCAR O'Reilly":'#8c3b73','NASCAR Truck':'#a94a2c','Formula E':'#325ccc',Supercars:'#e24426',DTM:'#495b69',Superbike:'#8a2040'};
+const FLAGS={Brazil:'🇧🇷',Qatar:'🇶🇦',Monaco:'🇲🇨',Portugal:'🇵🇹',Spain:'🇪🇸','United States':'🇺🇸','United Arab Emirates':'🇦🇪',Italy:'🇮🇹',Germany:'🇩🇪',France:'🇫🇷',Japan:'🇯🇵',Australia:'🇦🇺',Austria:'🇦🇹',Belgium:'🇧🇪',Netherlands:'🇳🇱',Canada:'🇨🇦',Mexico:'🇲🇽','United Kingdom':'🇬🇧',China:'🇨🇳',Thailand:'🇹🇭',Indonesia:'🇮🇩',Malaysia:'🇲🇾',Finland:'🇫🇮',Sweden:'🇸🇪',Norway:'🇳🇴',Denmark:'🇩🇰',Greece:'🇬🇷',Chile:'🇨🇱',Kenya:'🇰🇪',Paraguay:'🇵🇾',Croatia:'🇭🇷',Estonia:'🇪🇪',Poland:'🇵🇱',Ireland:'🇮🇪',India:'🇮🇳',Bahrain:'🇧🇭',Oman:'🇴🇲',Hungary:'🇭🇺'};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
 const fmt=t=>new Intl.DateTimeFormat(undefined,{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}).format(new Date(t));
 const clock=t=>{let s=Math.max(0,Math.floor(t/1000));return [Math.floor(s/86400),Math.floor(s/3600)%24,Math.floor(s/60)%60,s%60].map(n=>String(n).padStart(2,'0'))};

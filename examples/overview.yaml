@@ -1,13 +1,15 @@
-# Create one card per series; these can be displayed in a grid.
-type: grid
-columns: 2
-square: false
-cards:
-  - type: custom:motorsport-card
-    calendar_entity: calendar.externa_sensorer_lightsouts
-    series: F1
-    compact: true
-  - type: custom:motorsport-card
-    calendar_entity: calendar.externa_sensorer_lightsouts
-    series: MotoGP
-    compact: true
+# One Motorsport Overview card containing all available series.
+# Tap a series to expand it, then optionally open its weekend schedule.
+type: custom:motorsport-card
+calendar_entity: auto
+view: overview
+series: all
+overview_layout: grid # Change to list for the vertical layout.
+max_series: 12
+days_ahead: 120
+language: auto
+# Optional: configure individual long-press shortcuts.
+# hold_actions:
+#   F1:
+#     action: navigate
+#     navigation_path: /lovelace/f1-sensor

@@ -14,15 +14,16 @@ A Lovelace dashboard card for [Lightsouts Motorsport Calendar](https://github.co
 
 ## Features
 
-- Countdown to the next selected series session: days, hours, minutes and seconds
+- Countdown to the next selected series session: days, hours and minutes (dd hh mm)
 - Series-specific accent colors and circuit/country labels
-- Expandable list of the current event's **remaining** sessions
-- Multi-series overview sorted by the next upcoming or currently scheduled session; simultaneous starts are supported
+- Expandable schedule that includes retained completed sessions (struck through), as well as the next session highlighted
+- Multi-series overview with selectable vertical list or responsive two-column grid, sorted by upcoming or currently scheduled sessions; simultaneous starts are supported
 - Compact mode and responsive layout
 - Tap to expand the session list; configurable long press (650 ms) for dashboard navigation or more-info
 - Visual card editor for calendar, series, view, horizon and hold behavior
 - Shared in-browser calendar request cache
 - Handles date-only multi-day events like WRC rallies
+- Requests seven days of retained calendar history, if available in Lightsouts; old events cannot be reconstructed if the source removed them
 
 > Session status is inferred from scheduled start/end times. This card does **not** show verified live results, timing or race-control status.
 
@@ -53,6 +54,7 @@ type: custom:motorsport-card
 calendar_entity: calendar.externa_sensorer_lightsouts
 series: all
 view: overview
+overview_layout: grid # grid or list
 max_series: 12
 days_ahead: 120
 ```

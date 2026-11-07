@@ -63,6 +63,6 @@ test('multiple matching calendars require explicit selection',()=>{
  assert.throws(()=>vm.runInContext('resolveCalendarEntity('+JSON.stringify(hass)+',"auto")',sandbox),/Flera Lightsouts/);
 });
 test('grid CSS uses host as responsive container',()=>{
- assert.match(source,/:host\\{[^}]*container-type:inline-size/);
- assert.match(source,/@container \\(max-width:600px\\)/);
+ assert.ok(source.includes(':host{display:block;color:#fff;container-type:inline-size'));
+ assert.ok(source.includes('@container (max-width:600px)'));
 });

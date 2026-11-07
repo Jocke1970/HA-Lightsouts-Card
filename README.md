@@ -2,7 +2,11 @@
 
 A Lovelace dashboard card for [Lightsouts Motorsport Calendar](https://github.com/mm98/ha-lightsouts-motorsport-calendar). Displays upcoming sessions with a live countdown, expandable race-weekend schedule and a multi-series motorsport overview.
 
-![Concept preview of the Motorsport Card (not a screenshot)](docs/design-preview.svg)
+![Lightsouts motorsport calendar source icon](https://raw.githubusercontent.com/mm98/ha-lightsouts-motorsport-calendar/main/custom_components/lightsouts/brand/icon.png)
+
+*Source-integration icon from Lightsouts; this is not a screenshot of the Motorsport Card.*
+
+![Motorsport Card concept preview (SVG)](docs/design-preview.svg)
 
 *Illustrative design mockup. The final appearance in Home Assistant may differ.*
 

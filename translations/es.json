@@ -51,5 +51,12 @@
   "race": "Carrera",
   "feature_race": "Carrera principal",
   "reverse_grid_race": "Carrera de parrilla invertida",
-  "rally": "Rally"
+  "rally": "Rally",
+  "expand_series": "Expandir tarjeta de categoría",
+  "collapse_series": "Cerrar tarjeta de categoría",
+  "series_shortcuts": "Accesos directos por categoría (opcional)",
+  "shortcut_series": "Categoría",
+  "shortcut_action": "Acción del acceso directo",
+  "shortcut_path": "Ruta del panel para la categoría",
+  "shortcut_help": "Pulsación larga en esta categoría del resumen. Sin acción para desactivar."
 }

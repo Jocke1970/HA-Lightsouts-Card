@@ -121,6 +121,89 @@ test('editor retains dropdown DOM across routine hass state updates',()=>{
 test('overview-only options are hidden for series cards',()=>{
  assert.match(source,/data-overview-only/);
  assert.match(source,/this\._config\.view==='overview'\?'':'hidden'/);
- assert.match(source,/label\[hidden\]\{display:none\}/);
- assert.match(source,/label\.hidden=config\.view!=='overview'/);
+ assert.ok(source.includes('label[hidden],fieldset[hidden]{display:none}'));
+ assert.ok(source.includes("field.hidden=config.view!=='overview'"));
+});
+
+test('overview expands full Series Card and keeps weekend schedule independent',()=>{
+ const Card=registrations.get('motorsport-card');
+ const card=Object.create(Card.prototype);
+ const now=Date.now();
+ const sample=(series,event,session,hours)=>({
+   series,full:series,event,session,location:'Circuit, Qatar',country:'Qatar',
+   start:now+hours*3600000,end:now+(hours+1)*3600000,allDay:false
+ });
+ card._config={view:'overview',language:'sv',overview_layout:'grid',max_series:12,hold_actions:{}};
+ card._hass={locale:{language:'sv-SE'}};
+ card._events=[sample('MotoGP','Qatar Grand Prix','Warm Up',12),sample('MotoGP','Qatar Grand Prix','Race',16),sample('F1','São Paulo Grand Prix','Race',18)];
+ card._overviewExpandedKey=null;card._overviewScheduleExpanded=false;card._error='';
+ const listeners={};
+ card.shadowRoot={
+   innerHTML:'',
+   querySelectorAll(selector){
+     const html=this.innerHTML;
+     const attr=selector.slice(1,-1).split('=')[0];
+     const matches=[...html.matchAll(new RegExp(attr+'="([0-9]+)"','g'))].map(m=>m[1]);
+     return [...new Set(matches)].map(value=>({
+       dataset:attr==='data-overview-index'?{overviewIndex:value}:attr==='data-schedule-index'?{scheduleIndex:value}:{seriesHold:value},
+       addEventListener(name,fn,capture){(listeners[attr+':'+value+':'+name+':'+Boolean(capture)]=fn)}
+     }));
+   }
+ };
+ const event={stopImmediatePropagation(){}};
+ const click=(type,index)=>listeners[type+':'+index+':click:false'](event);
+ card.renderOverview();
+ assert.doesNotMatch(card.shadowRoot.innerHTML,/data-overview-count/,'initial overview remains compact');
+ click('data-overview-index',0);
+ assert.match(card.shadowRoot.innerHTML,/data-overview-count/,'selected series expands into full card with countdown');
+ assert.match(card.shadowRoot.innerHTML,/Visa helgschema/);
+ assert.doesNotMatch(card.shadowRoot.innerHTML,/class="schedule overview-schedule"/);
+ click('data-schedule-index',0);
+ assert.match(card.shadowRoot.innerHTML,/class="schedule overview-schedule"/,'schedule opens within full card');
+ assert.match(card.shadowRoot.innerHTML,/Qatar Grand Prix/);
+ click('data-overview-index',0);
+ assert.doesNotMatch(card.shadowRoot.innerHTML,/data-overview-count/,'tapping expanded main card closes it');
+ assert.equal(card._overviewScheduleExpanded,false,'closing resets schedule');
+});
+test('overview per-series hold uses exact series shortcut, without global fallback',()=>{
+ const Card=registrations.get('motorsport-card');
+ const card=Object.create(Card.prototype);
+ card._config={hold_action:{action:'navigate',navigation_path:'/lovelace/default'},hold_actions:{
+   F1:{action:'navigate',navigation_path:'/lovelace/f1-sensor'},
+   MotoGP:{action:'none'}
+ }};
+ const fired=[];
+ card.performHoldAction=action=>fired.push(action);
+ assert.equal(card.hasSeriesHold('F1'),true);
+ assert.equal(card.hasSeriesHold('MotoGP'),false);
+ assert.equal(card.hasSeriesHold('WRC'),false);
+ card.onHoldForSeries('F1');
+ card.onHoldForSeries('MotoGP');
+ card.onHoldForSeries('WRC');
+ assert.equal(fired.length,1);
+ assert.equal(fired[0].navigation_path,'/lovelace/f1-sensor');
+});
+test('new translation keys are present for all languages',()=>{
+ const catalog=vm.runInContext('LANGUAGE_CATALOG',sandbox);
+ for(const lang of ['en','sv','es']){
+   for(const key of ['expand_series','collapse_series','series_shortcuts','shortcut_series','shortcut_action','shortcut_path'])
+     assert.equal(typeof catalog[lang][key],'string',lang+': '+key);
+ }
+});
+
+test('overview only exposes per-series shortcut controls, while Series Card keeps single hold action',()=>{
+ assert.ok(source.includes('data-series-only'));
+ assert.ok(source.includes("field.hidden=config.view==='overview'"));
+ assert.ok(source.includes("field.hidden=config.view!=='overview'"));
+ assert.ok(source.includes('data-key="shortcut_series"'));
+ assert.ok(source.includes('data-key="shortcut_action"'));
+ assert.ok(source.includes('data-key="shortcut_path"'));
+});
+test('invalid per-series navigation target does not intercept regular taps',()=>{
+ const Card=registrations.get('motorsport-card');
+ const card=Object.create(Card.prototype);
+ card._config={hold_actions:{F1:{action:'navigate',navigation_path:'not/a/dashboard'}}};
+ assert.equal(card.hasSeriesHold('F1'),false);
+ card._config.hold_actions.F1.navigation_path='/lovelace/f1-sensor';
+ assert.equal(card.hasSeriesHold('F1'),true);
 });

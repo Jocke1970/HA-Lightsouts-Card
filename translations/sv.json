@@ -51,5 +51,12 @@
   "race": "Race",
   "feature_race": "Huvudrace",
   "reverse_grid_race": "Race med omvänd startordning",
-  "rally": "Rally"
+  "rally": "Rally",
+  "expand_series": "Öppna seriekort",
+  "collapse_series": "Stäng seriekort",
+  "series_shortcuts": "Genvägar per serie (valfritt)",
+  "shortcut_series": "Serie",
+  "shortcut_action": "Genvägsåtgärd",
+  "shortcut_path": "Dashboard-sökväg för vald serie",
+  "shortcut_help": "Långtryck på denna serie i Motorsportöversikten. Välj Ingen åtgärd för att avaktivera."
 }

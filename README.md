@@ -1,48 +1,77 @@
 # HA Lightsouts Card 🏁
 
-A Lovelace dashboard card for [Lightsouts Motorsport Calendar](https://github.com/mm98/ha-lightsouts-motorsport-calendar). Displays upcoming sessions with a live countdown, expandable race-weekend schedule and a multi-series motorsport overview.
+A customizable Home Assistant dashboard card for [Lightsouts Motorsport Calendar](https://github.com/mm98/ha-lightsouts-motorsport-calendar).
 
-![Lightsouts motorsport calendar source icon](https://raw.githubusercontent.com/mm98/ha-lightsouts-motorsport-calendar/main/custom_components/lightsouts/brand/icon.png)
+Display the next motorsport sessions with countdowns, race-weekend schedules and a multi-series overview.
 
-*Source-integration icon from Lightsouts; this is not a screenshot of the Motorsport Card.*
+![Lightsouts integration icon](https://raw.githubusercontent.com/mm98/ha-lightsouts-motorsport-calendar/main/custom_components/lightsouts/brand/icon.png)
 
-![Motorsport Card concept preview (SVG)](docs/design-preview.svg)
-
-*Illustrative design mockup. The final appearance in Home Assistant may differ.*
-
-> **Release status:** Tested in Home Assistant through the `2026.11.0b4` beta. Stable releases are published from `main` after validation.
+*Icon provided by the Lightsouts source integration.*
 
 ## Features
 
-- Countdown to the next selected series session: days, hours and minutes (dd hh mm)
-- Series-specific accent colors and circuit/country labels
-- Expandable schedule that includes retained completed sessions (struck through), as well as the next session highlighted
-- Multi-series overview with selectable vertical list or responsive two-column grid, sorted by upcoming or currently scheduled sessions; simultaneous starts are supported
-- Tap a series in the overview to expand that specific event's race-weekend schedule; tap again to collapse it
-- Compact mode and responsive layout
-- Tap to expand the session list; configurable long press (650 ms) for dashboard navigation or more-info
-- Visual card editor for calendar, series, view, horizon and hold behavior
-- Shared in-browser calendar request cache
-- Handles date-only multi-day events like WRC rallies
-- Requests seven days of retained calendar history, if available in Lightsouts; old events cannot be reconstructed if the source removed them
+- **Series Card:** countdown in days, hours and minutes, event and circuit information, country flag, and series-specific styling
+- **Motorsport Overview:** upcoming sessions from multiple series, in a vertical list or a responsive two-column grid; tap a series to expand a full Series Card and tap again to collapse it
+- **Weekend schedule:** independently open and close the schedule inside an expanded Series Card, including past sessions when the calendar retains them
+- **Configurable long press:** navigate from individual Series Cards or define a separate dashboard shortcut for each series in the overview
+- **Visual editor:** configure series, calendar, language, view and layout
+- **Languages:** English, Spanish and Swedish; automatic language selection based on Home Assistant
+- **Responsive layout:** suitable for desktop and mobile dashboards
+- **WRC support:** date-only and multi-day calendar events
 
-> Session status is inferred from scheduled start/end times. This card does **not** show verified live results, timing or race-control status.
+Session status is inferred from the published schedule, not from live telemetry.
 
-## Data source
+## Requirements
 
-Requires the third-party Lightsouts integration and its calendar. The calendar entity might be `calendar.lightsouts` or, depending on your installation, e.g. `calendar.externa_sensorer_lightsouts`. Set the actual entity ID in the card editor.
+Install [Lightsouts Motorsport Calendar](https://github.com/mm98/ha-lightsouts-motorsport-calendar) in Home Assistant and enable the motorsport series you want to follow.
 
-## Interactive Motorsport Overview (development)
+## Installation
 
-In the upcoming development version, tapping a series entry in the overview expands it into a full Series Card with its own countdown and event information. Tap the main part of the expanded Series Card again to collapse it. The **Show weekend schedule** button independently opens and closes the session list without collapsing the card. Only one series is expanded at a time; the behavior works with both vertical list and two-column grid.
+Install **HA Lightsouts Card** from Home Assistant Marketplace as an **Instrumentpanel / Dashboard** repository.
 
-Optional per-series long-press destinations can be configured in the visual card editor or via YAML:
+Marketplace normally registers the JavaScript module automatically. If the card is not available after installation, reload Home Assistant in your browser and check **Settings → Dashboards → Resources**.
+
+After installation, add **Lightsouts Motorsport Card** using the visual editor, or configure `custom:motorsport-card` in YAML.
+
+### Series Card
+
+```yaml
+type: custom:motorsport-card
+calendar_entity: auto
+view: series
+series: F1
+language: auto
+hold_action:
+  action: navigate
+  navigation_path: /lovelace/f1-sensor
+```
+
+Replace the example navigation path with the actual URL path of your Home Assistant view.
+
+### Motorsport Overview
 
 ```yaml
 type: custom:motorsport-card
 calendar_entity: auto
 view: overview
 overview_layout: grid
+max_series: 12
+days_ahead: 120
+language: auto
+```
+
+Set `overview_layout: list` for the vertical layout. The default calendar setting, `auto`, detects a unique Lightsouts calendar even if its entity ID is customized.
+
+Ready-to-use examples: [Series Card](examples/f1.yaml) and [Motorsport Overview](examples/overview.yaml).
+
+## Per-series dashboard shortcuts
+
+Configure optional long-press actions in the visual editor, or use `hold_actions` in YAML for the Motorsport Overview:
+
+```yaml
+type: custom:motorsport-card
+view: overview
+calendar_entity: auto
 hold_actions:
   F1:
     action: navigate
@@ -52,89 +81,23 @@ hold_actions:
     navigation_path: /lovelace/motogp
 ```
 
-The map is keyed by the series name reported by Lightsouts. Series without configured shortcuts keep their normal tap-to-expand behavior. Existing individual Series Cards retain their `hold_action` configuration. Dashboard paths above are examples and must be replaced with real Home Assistant view URLs.
+Replace the example paths with your own dashboard URLs. A normal tap expands the selected Series Card; the **Show weekend schedule** button operates independently. Only one series expands at a time. Unconfigured shortcuts do not affect ordinary taps.
 
-## Languages
+## Language
 
-The card supports **English, Spanish and Swedish**. Set `language: auto` (default) to follow the Home Assistant frontend language, or force a language per card with `language: en`, `language: es`, or `language: sv`.
+Supported options are `auto`, `en`, `es` and `sv`. Set `language: auto` to use Home Assistant's configured language. Unsupported locales fall back to English.
 
-```yaml
-type: custom:motorsport-card
-calendar_entity: auto
-view: overview
-overview_layout: grid
-language: es
-```
+The translation catalogs are available in [translations/](translations/). Translations are included in the installed JavaScript bundle, so separate language files are not required at runtime.
 
-Translations are maintained in `translations/en.json`, `translations/es.json`, and `translations/sv.json`, then embedded into the single distributable `dist/motorsport-card.js` file so no additional requests are needed at runtime. Unknown locale codes fall back to English. Motorsport event and circuit names remain sourced from Lightsouts, while recognized session types are translated. To add another language, add a matching translation catalog and include it in the bundle.
+Series, event and circuit names are taken from Lightsouts; common session labels and card controls are translated.
 
-## YAML examples
+## Notes
 
-### Formula 1 card with long press navigation
-
-```yaml
-type: custom:motorsport-card
-calendar_entity: calendar.externa_sensorer_lightsouts
-series: F1
-view: series
-hold_action:
-  action: navigate
-  navigation_path: /lovelace/f1-sensor
-```
-
-Use **your own** dashboard view path. A normal tap expands the session list, while a long press navigates.
-
-### Overview of all available series
-
-```yaml
-type: custom:motorsport-card
-calendar_entity: calendar.externa_sensorer_lightsouts
-series: all
-view: overview
-overview_layout: grid # grid or list
-max_series: 12
-days_ahead: 120
-```
-
-See [more configuration examples](examples/).
-
-## Installation
-
-Install **HA Lightsouts Card** from Home Assistant Marketplace as an **Instrumentpanel / Dashboard** repository. Choose the latest stable version for normal use or enable prereleases for beta testing.
-
-`hacs.json` points to the self-contained bundle `dist/motorsport-card.js`. The Marketplace can register the JavaScript module automatically. Do not install the `dev` branch in a production Home Assistant.
-
-For **manual installation**, copy `dist/motorsport-card.js` to `config/www/motorsport-card.js`, then add the following dashboard resource of type **JavaScript module**:
-
-```
-/local/motorsport-card.js
-```
-
-Reload the browser and add one of the YAML examples above. Marketplace installations should use the Marketplace-managed resource.
-
-## Release process
-
-`dev` → `beta` → `main` (stable). HA tests must be done from `beta`; `dev` is for code development only. No stable tag until beta behavior has been verified. See [development notes](docs/DEVELOPMENT.md).
-
-## Testing
-
-```sh
-node --check dist/motorsport-card.js
-node --test tests/card.test.cjs
-```
-
-GitHub Actions includes both JavaScript testing and Marketplace/HACS repository validation.
-
-## Roadmap
-
-- Expand overview entries into a full Series Card, with independent weekend-schedule toggle
-- Per-series configurable long-press navigation destinations
-- Improve compact mode and accessibility
-- Expand translations and screenshot documentation
+Completed sessions appear only when they remain available in the Lightsouts calendar. The countdown and in-progress indicators are schedule-based; the card does not provide verified live timing, weather, race results or standings.
 
 ## Credits
 
-The data source is [Lightsouts Motorsport Calendar](https://github.com/mm98/ha-lightsouts-motorsport-calendar), which retrieves schedules from [lightsouts.com](https://lightsouts.com/). This is an independent frontend card.
+Uses calendar data from [Lightsouts Motorsport Calendar](https://github.com/mm98/ha-lightsouts-motorsport-calendar). This is an independent dashboard card.
 
 ## License
 
